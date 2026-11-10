@@ -1,0 +1,28 @@
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Decode address - Define Not gates first
+    Not(in=address[14], out=ramSelect);
+    Not(in=address[13], out=notAddress13);
+
+    // Then use them in And gates
+    And(a=address[14], b=address[13], out=keyboardSelect);
+    And(a=address[14], b=notAddress13, out=screenSelect);
+
+    // RAM16K
+    And(a=load, b=ramSelect, out=ramLoad);
+    RAM16K(in=in, load=ramLoad, address=address[0..13], out=ramOut);
+
+    // Screen
+    And(a=load, b=screenSelect, out=screenLoad);
+    Screen(in=in, load=screenLoad, address=address[0..12], out=screenOut);
+
+    // Keyboard
+    Keyboard(out=keyboardOut);
+
+    // Select output
+    Mux16(a=screenOut, b=keyboardOut, sel=keyboardSelect, out=upperOut);
+    Mux16(a=ramOut, b=upperOut, sel=address[14], out=out);
+}

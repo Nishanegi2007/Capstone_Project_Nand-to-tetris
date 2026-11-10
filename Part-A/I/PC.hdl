@@ -1,0 +1,21 @@
+
+CHIP PC {
+    IN in[16], load, inc, reset;
+    OUT out[16];
+
+    PARTS:
+    // Increment current value
+    Inc16(in=regOut, out=incremented);
+
+    // Select between current value and incremented value
+    Mux16(a=regOut, b=incremented, sel=inc, out=step);
+
+    // Select between step value and input
+    Mux16(a=step, b=in, sel=load, out=loaded);
+
+    // Reset has highest priority
+    Mux16(a=loaded, b=false, sel=reset, out=nextValue);
+
+    // Store value in register
+    Register(in=nextValue, load=true, out=out, out=regOut);
+}

@@ -1,0 +1,40 @@
+
+CHIP ALU {
+    IN x[16], y[16],
+       zx, nx, zy, ny, f, no;
+
+    OUT out[16], zr, ng;
+
+    PARTS:
+    // If zx = 1, set x to zero
+    Mux16(a=x, b=false, sel=zx, out=x1);
+
+    // If nx = 1, negate x
+    Not16(in=x1, out=notX);
+    Mux16(a=x1, b=notX, sel=nx, out=x2);
+
+    // If zy = 1, set y to zero
+    Mux16(a=y, b=false, sel=zy, out=y1);
+
+    // If ny = 1, negate y
+    Not16(in=y1, out=notY);
+    Mux16(a=y1, b=notY, sel=ny, out=y2);
+
+    // Function: AND or ADD
+    And16(a=x2, b=y2, out=andResult);
+    Add16(a=x2, b=y2, out=addResult);
+    Mux16(a=andResult, b=addResult, sel=f, out=result);
+
+    // If no = 1, negate output
+    Not16(in=result, out=notResult);
+    Mux16(a=result, b=notResult, sel=no, out=out);
+
+    // zr = 1 if output is zero
+    Or8Way(in=out[0..7], out=or1);
+    Or8Way(in=out[8..15], out=or2);
+    Or(a=or1, b=or2, out=or3);
+    Not(in=or3, out=zr);
+
+    // ng = most significant bit
+    Or(a=out[15], b=false, out=ng);
+}
